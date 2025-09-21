@@ -138,6 +138,39 @@ python -m voxcpm.cli --help
 You can start the UI interface by running `python app.py`, which allows you to perform Voice Cloning and Voice Creation.
 
 
+## 🔧 Fine-tune VoxCPM with LoRA (Arabic example)
+
+We ship a reference training script in `examples/finetune_voxcpm_lora.py` that injects
+LoRA adapters into the MiniCPM attention blocks and acoustic projection layers. The
+script performs teacher-forced supervision on AudioVAE latents, making it ideal for
+small single-speaker datasets such as [`arbml/arabic_single_speaker_speech_dataset`](https://huggingface.co/datasets/arbml/arabic_single_speaker_speech_dataset).
+
+```bash
+# Authenticate (if the dataset/model requires it)
+export HF_TOKEN=hf_...
+
+# Launch fine-tuning
+python examples/finetune_voxcpm_lora.py \
+  --dataset arbml/arabic_single_speaker_speech_dataset \
+  --text-column text \
+  --audio-column audio \
+  --output-dir ./voxcpm-arabic-lora \
+  --num-epochs 3 \
+  --batch-size 2 \
+  --learning-rate 1e-4 \
+  --diffusion-steps 10
+```
+
+The script freezes the base checkpoint, trains only low-rank adapters, and stores the
+weights in `lora_weights.pt` plus configuration metadata in `lora_config.json`. During
+inference you can merge or load these adapters on top of the released VoxCPM model to
+clone the target Arabic voice.
+
+If you prefer an interactive walkthrough, open the accompanying notebook at
+`notebooks/arabic_lora_finetuning.ipynb`, which mirrors the training pipeline step by
+step and highlights where to plug in your dataset credentials and hyper-parameters.
+
+
 
 ## 👩‍🍳 A Voice Chef's Guide
 Welcome to the VoxCPM kitchen! Follow this recipe to cook up perfect generated speech. Let’s begin.
